@@ -7,13 +7,9 @@ import os
 def clear_console():
     os.system('clear' if os.name == 'posix' else 'cls')
 
-'''
+
 EMAIL = input("Enter your Tabroom email: ")
 PASSWORD = get_password()
-'''
-
-EMAIL = "kotamrajunischal101@gmail.com"
-PASSWORD = "Nischal101!"
 
 session = requests.Session()
 dashboard_content = login('https://www.tabroom.com/user/login/login.mhtml', EMAIL, PASSWORD, session, nsda=False)
