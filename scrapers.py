@@ -56,7 +56,7 @@ def fetch_nsda_points(soup):
                 if "You ARE eligible" in text:
                     data['eligibility'] = True
                 else:
-                    data['elibibility'] = False
+                    data['elibigility'] = False
     
     return data
 
