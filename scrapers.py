@@ -119,7 +119,6 @@ def fetch_paradigm(soup, EMAIL, PASSWORD):
             print("Could not find paradigm textarea on page")
             return "No paradigm found - textarea not found"
             
-        # Process each element in the paradigm
         paradigm_text = ""
         processed_text = set()
         for element in paradigm_div.descendants:
@@ -139,3 +138,24 @@ def fetch_paradigm(soup, EMAIL, PASSWORD):
             return "No paradigm found - empty"
             
         return paradigm_text.strip()
+    
+def fetch_account_info(soup):
+    print("\n--------- ACCOUNT INFO ---------")
+    account_info = {}
+
+    account_info['email'] = soup.find('input', {'name': 'email'})['value']
+    account_info['first_name'] = soup.find('input', {'name': 'first'})['value']
+    account_info['middle_name'] = soup.find('input', {'name': 'middle'})['value']
+    account_info['last_name'] = soup.find('input', {'name': 'last'})['value']
+    account_info['phone_number'] = soup.find('input', {'name': 'phone'})['value']
+    account_info['pronouns'] = soup.find('input', {'name': 'pronoun'})['value']
+    account_info['time_zone'] = soup.find('select', {'name': 'timezone'}).find('option', selected=True)['value']
+    account_info['street_address'] = soup.find('input', {'name': 'street'})['value']
+    account_info['city'] = soup.find('input', {'name': 'city'})['value']
+    account_info['state'] = soup.find('select', {'name': 'state'}).find('option', selected=True)['value']
+    account_info['country'] = soup.find('select', {'name': 'country'}).find('option', selected=True)['value']
+    account_info['zip_code'] = soup.find('input', {'name': 'zip'})['value']
+    account_info['no_email'] = soup.find('input', {'name': 'no_email'})['value']
+
+    return account_info
+

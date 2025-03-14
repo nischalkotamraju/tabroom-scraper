@@ -3,7 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 import sys
 
-def login(loginPageURL, EMAIL: str, PASSWORD: str, session, nsda: bool = False, paradigm: bool = False, specific_paradigm: bool = False, specific_paradigm_link: str = None):
+def login(loginPageURL, EMAIL: str, PASSWORD: str, session, nsda: bool = False, paradigm: bool = False, specific_paradigm: bool = False, specific_paradigm_link: str = None, account: bool = False):
     try:
         session = requests.Session()
         
@@ -58,6 +58,8 @@ def login(loginPageURL, EMAIL: str, PASSWORD: str, session, nsda: bool = False, 
                 dashboard = session.get("https://www.tabroom.com/user/judge/paradigm.mhtml")
             elif (specific_paradigm):
                 dashboard = session.get(specific_paradigm_link)
+            elif (account):
+                dashboard = session.get("https://www.tabroom.com/user/login/profile.mhtml")
             else:
                 dashboard = session.get("https://www.tabroom.com/user/student/")
             dashboard.raise_for_status()

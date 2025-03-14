@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
-from login import login
+from login import login, get_password
 import requests
-from scrapers import fetch_upcoming_tournaments, fetch_tournament_history, fetch_nsda_points, fetch_tournament_signups, fetch_paradigm
+from scrapers import fetch_upcoming_tournaments, fetch_tournament_history, fetch_nsda_points, fetch_tournament_signups, fetch_paradigm, fetch_account_info
 import os
 
 def clear_console():
@@ -33,6 +33,10 @@ nsda_soup = BeautifulSoup(nsda_content, 'html.parser')
 print(fetch_nsda_points(nsda_soup))
 
 paradigm_content = login('https://www.tabroom.com/user/login/login.mhtml', EMAIL, PASSWORD, session, nsda=False, paradigm=True)
-if paradigm_content:
-    paradigm_soup = BeautifulSoup(paradigm_content, 'html.parser')
-    print(fetch_paradigm(paradigm_soup, EMAIL, PASSWORD))
+paradigm_soup = BeautifulSoup(paradigm_content, 'html.parser')
+print(fetch_paradigm(paradigm_soup, EMAIL, PASSWORD))
+
+account_content = login('https://www.tabroom.com/user/login/login.mhtml', EMAIL, PASSWORD, session, nsda=False, paradigm=False, account=True)
+account_content = BeautifulSoup(account_content, 'html.parser')
+print(fetch_account_info(account_content))
+
