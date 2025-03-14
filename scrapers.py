@@ -1,3 +1,7 @@
+from login import login
+import requests
+from bs4 import BeautifulSoup
+
 def fetch_upcoming_tournaments(soup):
     upcoming_tournaments = soup.find_all('table', id='upcoming')
     print("\n--------- UPCOMING TOURNAMENTS ---------")
@@ -56,7 +60,7 @@ def fetch_nsda_points(soup):
                 if "You ARE eligible" in text:
                     data['eligibility'] = True
                 else:
-                    data['elibigility'] = False
+                    data['eligibility'] = False
     
     return data
 
@@ -67,17 +71,71 @@ def fetch_tournament_signups(soup):
     tournament_table = soup.find('table', id='signup_table')
     signups = []
     
-    for body in tournament_table.find_all('tbody'):
-        for tournament in body.find_all("tr"):
-            tournament_name = tournament.select_one('td', class_='nospace smallish').text.strip()
-            tournament_name = ' '.join(tournament_name.split())
-            tournament_date = tournament.find('td', class_='smallish').text.strip()
-            tournament_date = ' '.join(tournament_date.split())
-            tournament_events = tournament.find('td', class_='nospace centeralign nospace smallish').text.strip()
-            tournament_events = ' '.join(tournament_events.split())
-            tournament_info = tournament.find('td', class_='centeralign').text.strip()
-            tournament_info = ' '.join(tournament_info.split())
-
-            signups.append({'name': tournament_name, 'date': tournament_date, 'events': tournament_events, 'info': tournament_info})
-        
+    if tournament_table:
+        for row in tournament_table.find_all('tr', class_='row'):
+            tournament_cell = row.find('td', class_='nospace smallish')
+            name_div = tournament_cell.find('div', class_='nowrap full nospace padvertless')
+            location_div = name_div.find_next_sibling('div')
+            
+            tournament_name = name_div.text.strip()
+            # Add space before state/location code
+            tournament_location = ' '.join(location_div.text.strip().split()) if location_div else ''
+            
+            date = row.find_all('td', class_='smallish')[1].text.strip()
+            signup_deadline = row.find_all('td', class_='smallish')[2].text.strip().replace('\n', '').replace('\t', '')
+            events = row.find('td', class_='nospace centeralign nospace smallish').text.strip()
+            info = row.find('td', class_='nospace centeralign nospace smallish').find_next_sibling('td', class_='centeralign').text.strip()
+            signups.append({
+                'name': tournament_name,
+                'location': tournament_location,
+                'date': date,
+                'signup_deadline': signup_deadline,
+                'events': events,
+                'info': info
+            })
+    
     return signups
+
+def fetch_paradigm(soup, EMAIL, PASSWORD):
+    print("\n--------- JUDGE PARADIGM ---------")
+    paradigm_link = soup.find('a', class_='fa fa-lg fa-file-text-o buttonwhite bluetext')
+    redirect_link = ""
+    
+    if paradigm_link:
+        redirect_link = "https://www.tabroom.com" + paradigm_link['href']
+        print(f"Accessing paradigm at: {redirect_link}")
+
+        session = requests.Session()
+        specific_paradigm = login(redirect_link, EMAIL, PASSWORD, session, nsda=False, paradigm=False, specific_paradigm=True, specific_paradigm_link=redirect_link)
+        
+        if specific_paradigm is None:
+            print("Failed to access paradigm page - login failed")
+            return "No paradigm found - login failed"
+            
+        paradigm_soup = BeautifulSoup(specific_paradigm, 'html.parser')
+        paradigm_div = paradigm_soup.find('div', class_='paradigm ltborderbottom')
+        
+        if paradigm_div is None:
+            print("Could not find paradigm textarea on page")
+            return "No paradigm found - textarea not found"
+            
+        # Process each element in the paradigm
+        paradigm_text = ""
+        processed_text = set()
+        for element in paradigm_div.descendants:
+            if element.name == 'li':
+                text = element.text.strip()
+                if text not in processed_text:
+                    paradigm_text += "\t– " + text + "\n"
+                    processed_text.add(text)
+            elif isinstance(element, str) and element.strip():
+                text = element.strip()
+                if text not in processed_text and not any(text in p for p in processed_text):
+                    paradigm_text += text + "\n"
+                    processed_text.add(text)
+            
+        if not paradigm_text:
+            print("Found textarea but paradigm text was empty")
+            return "No paradigm found - empty"
+            
+        return paradigm_text.strip()

@@ -1,10 +1,9 @@
 #TODO Add checks for if page was logged into correctly
-import os
 import requests
 from bs4 import BeautifulSoup
 import sys
 
-def login(loginPageURL, EMAIL: str, PASSWORD: str, session, nsda: bool):
+def login(loginPageURL, EMAIL: str, PASSWORD: str, session, nsda: bool = False, paradigm: bool = False, specific_paradigm: bool = False, specific_paradigm_link: str = None):
     try:
         session = requests.Session()
         
@@ -55,9 +54,12 @@ def login(loginPageURL, EMAIL: str, PASSWORD: str, session, nsda: bool):
         try:
             if (nsda):
                 dashboard = session.get("https://www.tabroom.com/user/student/nsda.mhtml")
+            elif (paradigm):
+                dashboard = session.get("https://www.tabroom.com/user/judge/paradigm.mhtml")
+            elif (specific_paradigm):
+                dashboard = session.get(specific_paradigm_link)
             else:
                 dashboard = session.get("https://www.tabroom.com/user/student/")
-            
             dashboard.raise_for_status()
             return dashboard.content
         except requests.RequestException as e:
